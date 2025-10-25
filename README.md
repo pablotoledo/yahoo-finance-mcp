@@ -120,7 +120,7 @@ docker run -d \
 |----------|---------|-------------|
 | `YF_MCP_TRANSPORT` | `stdio` | Transport protocol (`stdio` or `http`) |
 | `YF_MCP_HTTP__HOST` | `0.0.0.0` | HTTP server bind address |
-| `YF_MCP_HTTP__PORT` | `3000` | HTTP server port |
+| `YF_MCP_HTTP__PORT` | `3001` | HTTP server port |
 | `YF_MCP_LOG_LEVEL` | `INFO` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 
 ### Example .env File
