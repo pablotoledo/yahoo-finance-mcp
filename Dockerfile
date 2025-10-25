@@ -35,7 +35,17 @@ COPY . .
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+    PYTHONPATH=/app \
+    YF_MCP_TRANSPORT=http \
+    YF_MCP_HTTP__HOST=0.0.0.0 \
+    YF_MCP_HTTP__PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
 
 # Command to run the MCP server
-CMD ["uv", "run", "server.py"]
+CMD ["python", "main.py"]
