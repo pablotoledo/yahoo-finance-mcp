@@ -2,20 +2,22 @@
 Models for holder information.
 """
 from typing import Union
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class HolderInfoResponse(BaseModel):
     """Response containing holder information."""
-    ticker: str = Field(..., description="Ticker symbol")
-    holder_type: str = Field(..., description="Type of holder information")
-    data: Union[dict, list] = Field(..., description="Holder data as dictionary or list")
-    
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "ticker": "AAPL",
                 "holder_type": "institutional_holders",
                 "data": []
             }
         }
+    )
+
+    ticker: str = Field(..., description="Ticker symbol")
+    holder_type: str = Field(..., description="Type of holder information")
+    data: Union[dict, list] = Field(..., description="Holder data as dictionary or list")
+

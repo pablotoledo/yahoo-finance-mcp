@@ -1,11 +1,25 @@
 """
 Models for stock information data.
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class StockInfoResponse(BaseModel):
     """Comprehensive stock information response."""
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "symbol": "AAPL",
+                "short_name": "Apple Inc.",
+                "long_name": "Apple Inc.",
+                "current_price": 150.25,
+                "market_cap": 2500000000000,
+                "pe_ratio": 25.5,
+                "sector": "Technology"
+            }
+        }
+    )
+
     # Basic identification
     symbol: str = Field(..., description="Stock ticker symbol")
     short_name: str | None = Field(None, description="Short company name")
@@ -45,16 +59,3 @@ class StockInfoResponse(BaseModel):
     price_to_book: float | None = Field(None, description="Price-to-book ratio")
     enterprise_value: int | None = Field(None, description="Enterprise value")
     profit_margins: float | None = Field(None, description="Profit margins")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "symbol": "AAPL",
-                "short_name": "Apple Inc.",
-                "long_name": "Apple Inc.",
-                "current_price": 150.25,
-                "market_cap": 2500000000000,
-                "pe_ratio": 25.5,
-                "sector": "Technology"
-            }
-        }
