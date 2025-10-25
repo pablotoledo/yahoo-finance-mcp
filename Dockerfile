@@ -43,9 +43,5 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
-
 # Command to run the MCP server
 CMD ["python", "main.py"]
