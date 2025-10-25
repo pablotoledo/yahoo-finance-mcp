@@ -27,25 +27,27 @@ def run_http() -> NoReturn:
     Ideal for remote deployment and multiple clients.
     
     Note: Streamable HTTP is the modern transport replacing SSE.
+    CORS is handled automatically by FastMCP for HTTP transport.
+    
+    FastMCP.run() only accepts transport and mount_path parameters.
+    Host, port, and stateless_http must be configured via settings.
     """
     print("🌐 Starting server in Streamable HTTP mode...", file=sys.stderr)
     print(f"   Host: {config.http.host}", file=sys.stderr)
     print(f"   Port: {config.http.port}", file=sys.stderr)
     print(f"   Stateless: {config.http.stateless}", file=sys.stderr)
-    print(f"   CORS origins: {config.http.cors_origins}", file=sys.stderr)
+    print(f"   CORS: Enabled (all origins allowed by default)", file=sys.stderr)
+    print(f"   Connect to: http://{config.http.host}:{config.http.port}/mcp", file=sys.stderr)
 
-    # Configure CORS
-    mcp.settings.cors.allow_origins = config.http.cors_origins
-    mcp.settings.cors.allow_methods = ["GET", "POST", "DELETE"]
-    mcp.settings.cors.allow_headers = ["Authorization", "Content-Type", "Mcp-Session-Id"]
+    # Configure FastMCP settings - these control the HTTP server
+    # FastMCP.run() signature: run(transport, mount_path) 
+    # Host/port/stateless are configured via settings, not run() parameters
+    mcp.settings.host = config.http.host
+    mcp.settings.port = config.http.port
+    mcp.settings.stateless_http = config.http.stateless
 
-    # Run server
-    mcp.run(
-        transport="streamable-http",
-        host=config.http.host,
-        port=config.http.port,
-        stateless_http=config.http.stateless
-    )
+    # Run server with streamable-http transport
+    mcp.run(transport="streamable-http")
 
 
 def main() -> NoReturn:
