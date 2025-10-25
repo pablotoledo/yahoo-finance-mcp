@@ -1,0 +1,12 @@
+services:
+  yfinance-mcp:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - YF_MCP_TRANSPORT=http
+      - YF_MCP_HTTP__HOST=0.0.0.0
+      - YF_MCP_HTTP__PORT=3001
+      - YF_MCP_HTTP__STATELESS=false
+      - YF_MCP_LOG_LEVEL=INFO
+    restart: unless-stopped
