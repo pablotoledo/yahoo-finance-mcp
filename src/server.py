@@ -8,6 +8,7 @@ from typing import Literal
 
 import pandas as pd
 import yfinance as yf
+from pydantic import Field
 from mcp.server.fastmcp import FastMCP, Context
 
 from src.models import (
@@ -102,25 +103,23 @@ Modernized MCP server for Yahoo Finance financial data with structured outputs.
 
 @mcp.tool(
     name="get_historical_stock_prices",
-    description="Get historical OHLCV stock prices for a ticker symbol with structured output"
+    description="Get historical OHLCV (Open, High, Low, Close, Volume) stock price data for analysis and charting"
 )
 async def get_historical_stock_prices(
-    ticker: str,
-    period: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = "1mo",
-    interval: Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"] = "1d",
+    ticker: str = Field(description="Stock ticker symbol (e.g., 'AAPL', 'MSFT', 'TSLA')"),
+    period: Literal["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"] = Field(
+        default="1mo",
+        description="Time period to retrieve: '1d'=1 day, '1mo'=1 month, '1y'=1 year, 'max'=all available data"
+    ),
+    interval: Literal["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo", "3mo"] = Field(
+        default="1d",
+        description="Data granularity: '1m'=1 minute, '1h'=1 hour, '1d'=1 day, '1wk'=1 week, '1mo'=1 month"
+    ),
     ctx: Context | None = None
 ) -> HistoricalPriceResponse | TickerValidationError:
     """
-    Get historical price data for a stock.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        period: Time period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)
-        interval: Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        HistoricalPriceResponse with data points or TickerValidationError
+    Retrieve historical stock price data with customizable time periods and intervals.
+    Returns structured OHLCV data suitable for technical analysis and visualization.
     """
     if ctx:
         await ctx.info(f"📊 Querying historical data for {ticker} (period={period}, interval={interval})")
@@ -192,21 +191,15 @@ async def get_historical_stock_prices(
 
 @mcp.tool(
     name="get_stock_info",
-    description="Get comprehensive stock information including price, market cap, financials, and company details"
+    description="Get comprehensive stock information including real-time price, market metrics, financial ratios, and company details"
 )
 async def get_stock_info(
-    ticker: str,
+    ticker: str = Field(description="Stock ticker symbol to retrieve information for (e.g., 'AAPL', 'GOOGL', 'TSLA')"),
     ctx: Context | None = None
 ) -> StockInfoResponse | TickerValidationError:
     """
-    Get comprehensive stock information.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        StockInfoResponse with detailed information or TickerValidationError
+    Retrieve detailed stock information including price data, market cap, valuation metrics, and company profile.
+    Useful for fundamental analysis and investment research.
     """
     if ctx:
         await ctx.info(f"📈 Querying stock info for {ticker}")
@@ -281,21 +274,15 @@ import json
 
 @mcp.tool(
     name="get_yahoo_finance_news",
-    description="Get latest news articles for a ticker symbol with structured output"
+    description="Get latest news articles and headlines related to a stock from Yahoo Finance"
 )
 async def get_yahoo_finance_news(
-    ticker: str,
+    ticker: str = Field(description="Stock ticker symbol to retrieve news for (e.g., 'AAPL', 'TSLA', 'NVDA')"),
     ctx: Context | None = None
 ) -> NewsListResponse | TickerValidationError:
     """
-    Get news articles for a stock.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        NewsListResponse with articles or TickerValidationError
+    Retrieve recent news articles, press releases, and market updates for a specific stock.
+    Useful for sentiment analysis and staying informed about company developments.
     """
     if ctx:
         await ctx.info(f"📰 Querying news for {ticker}")
@@ -352,21 +339,15 @@ async def get_yahoo_finance_news(
 
 @mcp.tool(
     name="get_stock_actions",
-    description="Get stock dividends and splits with structured output"
+    description="Get historical dividend payments and stock split events for a company"
 )
 async def get_stock_actions(
-    ticker: str,
+    ticker: str = Field(description="Stock ticker symbol to retrieve corporate actions for (e.g., 'AAPL', 'MSFT', 'KO')"),
     ctx: Context | None = None
 ) -> StockActionsResponse | TickerValidationError:
     """
-    Get stock actions (dividends and splits).
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        StockActionsResponse with actions or TickerValidationError
+    Retrieve historical record of dividends and stock splits.
+    Essential for income investors and understanding adjusted price calculations.
     """
     if ctx:
         await ctx.info(f"💰 Querying stock actions for {ticker}")
@@ -411,23 +392,16 @@ async def get_stock_actions(
 
 @mcp.tool(
     name="get_financial_statement",
-    description="Get financial statements (income statement, balance sheet, cash flow) with structured output"
+    description="Get official financial statements including income statement, balance sheet, and cash flow (annual or quarterly)"
 )
 async def get_financial_statement(
-    ticker: str,
-    financial_type: FinancialType,
+    ticker: str = Field(description="Stock ticker symbol to retrieve financial statements for (e.g., 'AAPL', 'MSFT', 'GOOGL')"),
+    financial_type: FinancialType = Field(description="Type of financial statement: 'income_stmt', 'balance_sheet', 'cashflow' (annual), or quarterly versions with 'quarterly_' prefix"),
     ctx: Context | None = None
 ) -> FinancialStatementResponse | TickerValidationError:
     """
-    Get financial statement data.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        financial_type: Type of statement (income_stmt, balance_sheet, cashflow, etc.)
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        FinancialStatementResponse with data or TickerValidationError
+    Retrieve official SEC-filed financial statements with historical data.
+    Critical for fundamental analysis, valuation models, and financial health assessment.
     """
     if ctx:
         await ctx.info(f"📊 Querying {financial_type} for {ticker}")
@@ -513,23 +487,16 @@ async def get_financial_statement(
 
 @mcp.tool(
     name="get_holder_info",
-    description="Get ownership information (institutional, mutual fund, insider) with structured output"
+    description="Get stock ownership data including institutional holders, mutual funds, insiders, and insider transactions"
 )
 async def get_holder_info(
-    ticker: str,
-    holder_type: HolderType,
+    ticker: str = Field(description="Stock ticker symbol to retrieve ownership information for (e.g., 'AAPL', 'TSLA', 'MSFT')"),
+    holder_type: HolderType = Field(description="Type of ownership data: 'major_holders', 'institutional_holders', 'mutualfund_holders', 'insider_transactions', 'insider_purchases', or 'insider_roster_holders'"),
     ctx: Context | None = None
 ) -> HolderInfoResponse | TickerValidationError:
     """
-    Get holder information.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        holder_type: Type of holder info (major_holders, institutional_holders, etc.)
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        HolderInfoResponse with data or TickerValidationError
+    Retrieve detailed ownership structure and insider trading activity.
+    Valuable for analyzing institutional interest and detecting insider confidence.
     """
     if ctx:
         await ctx.info(f"👥 Querying {holder_type} for {ticker}")
@@ -596,21 +563,15 @@ async def get_holder_info(
 
 @mcp.tool(
     name="get_option_expiration_dates",
-    description="Get available option expiration dates with structured output"
+    description="Get all available option contract expiration dates for a stock"
 )
 async def get_option_expiration_dates(
-    ticker: str,
+    ticker: str = Field(description="Stock ticker symbol to retrieve option expiration dates for (e.g., 'AAPL', 'SPY', 'TSLA')"),
     ctx: Context | None = None
 ) -> OptionExpirationDatesResponse | TickerValidationError:
     """
-    Get option expiration dates.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        OptionExpirationDatesResponse with dates or TickerValidationError
+    Retrieve list of available expiration dates for options contracts.
+    Required first step before querying specific option chains.
     """
     if ctx:
         await ctx.info(f"📅 Querying option expiration dates for {ticker}")
@@ -654,25 +615,17 @@ async def get_option_expiration_dates(
 
 @mcp.tool(
     name="get_option_chain",
-    description="Get option chain (calls/puts) for a specific expiration date with structured output"
+    description="Get detailed options chain data (calls or puts) for a specific expiration date"
 )
 async def get_option_chain(
-    ticker: str,
-    expiration_date: str,
-    option_type: Literal["calls", "puts"],
+    ticker: str = Field(description="Stock ticker symbol to retrieve options chain for (e.g., 'AAPL', 'SPY', 'NVDA')"),
+    expiration_date: str = Field(description="Option expiration date in YYYY-MM-DD format (use get_option_expiration_dates to find valid dates)"),
+    option_type: Literal["calls", "puts"] = Field(description="Type of options contracts: 'calls' (right to buy) or 'puts' (right to sell)"),
     ctx: Context | None = None
 ) -> OptionChainResponse | TickerValidationError:
     """
-    Get option chain data.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        expiration_date: Expiration date (YYYY-MM-DD format)
-        option_type: Type of options (calls or puts)
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        OptionChainResponse with contracts or TickerValidationError
+    Retrieve complete options chain with strike prices, premiums, Greeks, and open interest.
+    Essential for options trading strategies and volatility analysis.
     """
     if ctx:
         await ctx.info(f"⚡ Querying {option_type} option chain for {ticker} ({expiration_date})")
@@ -758,25 +711,17 @@ async def get_option_chain(
 
 @mcp.tool(
     name="get_recommendations",
-    description="Get analyst recommendations and upgrades/downgrades with structured output"
+    description="Get analyst recommendations, ratings, and upgrade/downgrade history from Wall Street firms"
 )
 async def get_recommendations(
-    ticker: str,
-    recommendation_type: RecommendationType,
-    months_back: int = 12,
+    ticker: str = Field(description="Stock ticker symbol to retrieve analyst recommendations for (e.g., 'AAPL', 'GOOGL', 'TSLA')"),
+    recommendation_type: RecommendationType = Field(description="Type of recommendations: 'recommendations' (current ratings) or 'upgrades_downgrades' (rating changes)"),
+    months_back: int = Field(default=12, description="Number of months of history to retrieve for upgrades/downgrades (1-60)"),
     ctx: Context | None = None
 ) -> RecommendationsResponse | TickerValidationError:
     """
-    Get analyst recommendations.
-
-    Args:
-        ticker: Ticker symbol (e.g., "AAPL", "MSFT")
-        recommendation_type: Type (recommendations or upgrades_downgrades)
-        months_back: Months of history for upgrades/downgrades (default: 12)
-        ctx: MCP context (auto-injected)
-
-    Returns:
-        RecommendationsResponse with recommendations or TickerValidationError
+    Retrieve analyst consensus ratings and recent rating changes from major investment firms.
+    Useful for gauging Wall Street sentiment and tracking analyst opinion shifts.
     """
     if ctx:
         await ctx.info(f"⭐ Querying {recommendation_type} for {ticker}")
